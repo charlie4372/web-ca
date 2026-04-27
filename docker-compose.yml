@@ -1,0 +1,17 @@
+services:
+  web-ca:
+    # For Portainer: build locally with `docker build -t web-ca:latest .`
+    # then deploy this stack. For CLI use, replace `image:` with `build: .`
+    image: web-ca:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - webca-data:/data
+    environment:
+      SESSION_SECRET: ${SESSION_SECRET:-change-me-to-a-random-string-at-least-32-chars}
+      CERT_ENCRYPTION_KEY: ${CERT_ENCRYPTION_KEY:-change-me-to-a-random-string-at-least-32-chars}
+      SECURE_COOKIES: "false"
+    restart: unless-stopped
+
+volumes:
+  webca-data:

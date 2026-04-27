@@ -1,0 +1,22 @@
+{
+  "name": "web-ca",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run dev -w @web-ca/api",
+    "dev:ui": "npm run dev -w @web-ca/ui",
+    "build": "npm run build --workspaces --if-present",
+    "db:generate": "npm run db:generate -w @web-ca/api",
+    "db:migrate": "npm run db:migrate -w @web-ca/api",
+    "db:seed": "npm run db:seed -w @web-ca/api",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}
