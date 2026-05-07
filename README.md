@@ -123,6 +123,19 @@ All routes require authentication except `POST /api/v1/auth/login`.
 | `TRUST_PROXY` | `false` | Set `true` when behind a reverse proxy |
 | `SECURE_COOKIES` | `auto` | Cookie secure flag: `auto`, `true`, or `false` |
 
++### Deploying to a Remote Docker Server                                                                                                                                                                                                                                            
+Build locally and push the image directly to a remote server over SSH:                                                                                                                                                                                                             
+                                                                                                                                                                                                                                                                            
+```bash                                                                                                                                                                                                                                                                     
+# Build the image                                                                                                                                                                                                                                                           
+docker build -t web-ca:latest .                                                                                                                                                                                                                                             
+                                                                                                                                                                                                                                                                            
+# Transfer to remote server (no registry needed)                                                                                                                                                                                                                            
+docker save web-ca:latest | ssh user@remote-server docker load                                                                                                                                                                                                              
+```                                                                                                                                                                                                                                                                         
+                                                                                                                                                                                                                                                                            
+Then deploy via Portainer or docker compose on the remote server.                                                                                                                                                                                                           
+
 ## Security
 
 - All private keys are encrypted at rest with AES-256-GCM
