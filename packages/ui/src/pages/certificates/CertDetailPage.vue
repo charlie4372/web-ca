@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   NCard, NDescriptions, NDescriptionsItem, NSpace, NButton, NTag, NH2,
-  NModal, NForm, NFormItem, NInputNumber, useMessage, useDialog, NIcon
+  NModal, NForm, NFormItem, NInputNumber, useMessage, useDialog, NIcon, NDropdown
 } from 'naive-ui';
 import { TrashOutline, RefreshOutline, DownloadOutline } from '@vicons/ionicons5';
 import { useCertificateStore } from '@/stores/certificate.store';
@@ -24,6 +24,26 @@ const renewLoading = ref(false);
 onMounted(() => certStore.fetchCertificate(props.id));
 
 const cert = computed(() => certStore.currentCert);
+
+const downloadOptions = [
+  { label: 'Bundle (cert + key + chain)', key: 'bundle' },
+  { label: 'Certificate (.crt)', key: 'cert' },
+  { label: 'Private Key (.key)', key: 'key' },
+];
+
+function handleDownloadSelect(key: string) {
+  switch (key) {
+    case 'bundle':
+      window.open(api.downloadUrl(`/certificates/${props.id}/download`), '_blank');
+      break;
+    case 'cert':
+      window.open(api.downloadUrl(`/certificates/${props.id}/download/cert`), '_blank');
+      break;
+    case 'key':
+      window.open(api.downloadUrl(`/certificates/${props.id}/download/key`), '_blank');
+      break;
+  }
+}
 
 async function handleRenew() {
   renewLoading.value = true;
@@ -56,10 +76,6 @@ function handleDelete() {
     },
   });
 }
-
-function handleDownload() {
-  window.open(api.downloadUrl(`/certificates/${props.id}/download`), '_blank');
-}
 </script>
 
 <template>
@@ -67,10 +83,12 @@ function handleDownload() {
     <NSpace justify="space-between" align="center" style="margin-bottom: 16px">
       <NH2 style="margin: 0">{{ cert.name }}</NH2>
       <NSpace>
-        <NButton @click="handleDownload">
-          <template #icon><NIcon><DownloadOutline /></NIcon></template>
-          Download Bundle
-        </NButton>
+        <NDropdown :options="downloadOptions" @select="handleDownloadSelect">
+          <NButton>
+            <template #icon><NIcon><DownloadOutline /></NIcon></template>
+            Download
+          </NButton>
+        </NDropdown>
         <NButton type="info" @click="showRenewModal = true">
           <template #icon><NIcon><RefreshOutline /></NIcon></template>
           Renew

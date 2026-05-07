@@ -88,6 +88,7 @@ export const uploadCaSchema = z.object({
   name: z.string().min(1).max(255),
   certificatePem: z.string().min(1),
   privateKeyPem: z.string().min(1),
+  passphrase: z.string().optional(),
 });
 
 export const renewCaSchema = z.object({

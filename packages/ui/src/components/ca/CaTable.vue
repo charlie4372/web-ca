@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { h } from 'vue';
 import { useRouter } from 'vue-router';
-import { NDataTable, NButton, NSpace, NTag, NIcon } from 'naive-ui';
+import { NDataTable, NButton, NTag, NIcon } from 'naive-ui';
 import type { DataTableColumns } from 'naive-ui';
-import { TrashOutline, EyeOutline } from '@vicons/ionicons5';
+import { TrashOutline } from '@vicons/ionicons5';
 import type { CaCertificate } from '@web-ca/shared';
 import { format, isPast } from 'date-fns';
 
@@ -42,24 +42,31 @@ const columns: DataTableColumns<CaCertificate> = [
     render: (row) => h(NTag, { size: 'small', type: row.isUploaded ? 'warning' : 'default' }, { default: () => row.isUploaded ? 'Uploaded' : 'Generated' }),
   },
   {
-    title: 'Actions',
+    title: '',
     key: 'actions',
-    width: 120,
+    width: 50,
     render: (row) =>
-      h(NSpace, { size: 'small' }, {
-        default: () => [
-          h(NButton, { size: 'small', quaternary: true, onClick: () => router.push({ name: 'ca-detail', params: { id: row.id } }) }, {
-            icon: () => h(NIcon, null, { default: () => h(EyeOutline) }),
-          }),
-          h(NButton, { size: 'small', quaternary: true, type: 'error', onClick: () => emit('delete', row.id) }, {
-            icon: () => h(NIcon, null, { default: () => h(TrashOutline) }),
-          }),
-        ],
-      }),
+      h(NButton, {
+        size: 'small',
+        quaternary: true,
+        type: 'error',
+        onClick: (e: Event) => { e.stopPropagation(); emit('delete', row.id); },
+      }, { icon: () => h(NIcon, null, { default: () => h(TrashOutline) }) }),
   },
 ];
+
+function handleRowClick(row: CaCertificate) {
+  router.push({ name: 'ca-detail', params: { id: row.id } });
+}
 </script>
 
 <template>
-  <NDataTable :columns="columns" :data="cas" :loading="loading" :bordered="true" size="small" />
+  <NDataTable
+    :columns="columns"
+    :data="cas"
+    :loading="loading"
+    :bordered="true"
+    size="small"
+    :row-props="(row: CaCertificate) => ({ style: 'cursor: pointer', onClick: () => handleRowClick(row) })"
+  />
 </template>

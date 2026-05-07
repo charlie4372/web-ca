@@ -73,4 +73,26 @@ router.get('/:id/download', (req, res) => {
   res.send(bundle);
 });
 
+router.get('/:id/download/cert', (req, res) => {
+  const cert = certService.getCertificateById(req.params.id);
+  if (!cert) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Certificate not found' } });
+    return;
+  }
+  res.setHeader('Content-Type', 'application/x-pem-file');
+  res.setHeader('Content-Disposition', `attachment; filename="${cert.name}.crt"`);
+  res.send(cert.certificatePem);
+});
+
+router.get('/:id/download/key', (req, res) => {
+  const certWithKey = certService.getCertificateWithKey(req.params.id);
+  if (!certWithKey) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Certificate not found' } });
+    return;
+  }
+  res.setHeader('Content-Type', 'application/x-pem-file');
+  res.setHeader('Content-Disposition', `attachment; filename="${certWithKey.cert.name}.key"`);
+  res.send(certWithKey.privateKeyPem);
+});
+
 export default router;

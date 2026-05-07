@@ -236,10 +236,31 @@ export function parsePemCertificate(pem: string) {
   };
 }
 
-export function validateKeyMatchesCert(certPem: string, keyPem: string): boolean {
+export function parsePrivateKey(pem: string, passphrase?: string): forge.pki.PrivateKey {
+  // Handle encrypted keys (Proc-Type: 4,ENCRYPTED)
+  if (pem.includes('ENCRYPTED')) {
+    if (!passphrase) throw new Error('Private key is encrypted — a passphrase is required');
+    return forge.pki.decryptRsaPrivateKey(pem, passphrase);
+  }
+  // Handle PKCS#8 (BEGIN PRIVATE KEY)
+  if (pem.includes('BEGIN PRIVATE KEY')) {
+    const asn1 = forge.asn1.fromDer(forge.util.decode64(
+      pem.replace(/-----[^-]+-----/g, '').replace(/\s/g, '')
+    ));
+    return forge.pki.privateKeyFromAsn1(asn1);
+  }
+  // Traditional RSA format (BEGIN RSA PRIVATE KEY)
+  return forge.pki.privateKeyFromPem(pem);
+}
+
+export function normalizePrivateKeyPem(pem: string, passphrase?: string): string {
+  return forge.pki.privateKeyToPem(parsePrivateKey(pem, passphrase));
+}
+
+export function validateKeyMatchesCert(certPem: string, keyPem: string, passphrase?: string): boolean {
   try {
     const cert = forge.pki.certificateFromPem(certPem);
-    const key = forge.pki.privateKeyFromPem(keyPem);
+    const key = parsePrivateKey(keyPem, passphrase);
     const pubFromCert = forge.pki.publicKeyToPem(cert.publicKey);
     const pubFromKey = forge.pki.publicKeyToPem(forge.pki.rsa.setPublicKey(
       (key as any).n, (key as any).e

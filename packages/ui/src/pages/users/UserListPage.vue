@@ -3,7 +3,7 @@ import { h, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { NSpace, NButton, NH2, NIcon, NDataTable, NTag, useMessage, useDialog } from 'naive-ui';
 import type { DataTableColumns } from 'naive-ui';
-import { AddOutline, CreateOutline, TrashOutline } from '@vicons/ionicons5';
+import { AddOutline, TrashOutline } from '@vicons/ionicons5';
 import { useUserStore } from '@/stores/user.store';
 import type { User } from '@web-ca/shared';
 import { format } from 'date-fns';
@@ -37,20 +37,16 @@ const columns: DataTableColumns<User> = [
     render: (row) => format(new Date(row.createdAt), 'PP'),
   },
   {
-    title: 'Actions',
+    title: '',
     key: 'actions',
-    width: 120,
+    width: 50,
     render: (row) =>
-      h(NSpace, { size: 'small' }, {
-        default: () => [
-          h(NButton, { size: 'small', quaternary: true, onClick: () => router.push({ name: 'user-edit', params: { id: row.id } }) }, {
-            icon: () => h(NIcon, null, { default: () => h(CreateOutline) }),
-          }),
-          h(NButton, { size: 'small', quaternary: true, type: 'error', onClick: () => handleDelete(row.id) }, {
-            icon: () => h(NIcon, null, { default: () => h(TrashOutline) }),
-          }),
-        ],
-      }),
+      h(NButton, {
+        size: 'small',
+        quaternary: true,
+        type: 'error',
+        onClick: (e: Event) => { e.stopPropagation(); handleDelete(row.id); },
+      }, { icon: () => h(NIcon, null, { default: () => h(TrashOutline) }) }),
   },
 ];
 
@@ -80,5 +76,12 @@ function handleDelete(id: string) {
       Create User
     </NButton>
   </NSpace>
-  <NDataTable :columns="columns" :data="userStore.users" :loading="userStore.loading" :bordered="true" size="small" />
+  <NDataTable
+    :columns="columns"
+    :data="userStore.users"
+    :loading="userStore.loading"
+    :bordered="true"
+    size="small"
+    :row-props="(row: User) => ({ style: 'cursor: pointer', onClick: () => router.push({ name: 'user-edit', params: { id: row.id } }) })"
+  />
 </template>

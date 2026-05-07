@@ -9,10 +9,17 @@ const form = ref({
   name: '',
   certificatePem: '',
   privateKeyPem: '',
+  passphrase: '',
 });
 
 function handleSubmit() {
-  emit('submit', { ...form.value });
+  const data: any = {
+    name: form.value.name,
+    certificatePem: form.value.certificatePem,
+    privateKeyPem: form.value.privateKeyPem,
+  };
+  if (form.value.passphrase) data.passphrase = form.value.passphrase;
+  emit('submit', data);
 }
 </script>
 
@@ -35,6 +42,14 @@ function handleSubmit() {
         type="textarea"
         :rows="8"
         placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;...&#10;-----END RSA PRIVATE KEY-----"
+      />
+    </NFormItem>
+    <NFormItem label="Passphrase (if key is encrypted)">
+      <NInput
+        v-model:value="form.passphrase"
+        type="password"
+        show-password-on="click"
+        placeholder="Leave blank if key is not encrypted"
       />
     </NFormItem>
     <NSpace justify="end">

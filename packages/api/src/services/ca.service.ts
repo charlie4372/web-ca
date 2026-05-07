@@ -2,7 +2,7 @@ import { db } from '../config/database.js';
 import { caCertificates } from '../db/schema/index.js';
 import { eq, sql } from 'drizzle-orm';
 import { encryptPrivateKey, decryptPrivateKey } from '../utils/pem.js';
-import { createCaCertificate, parsePemCertificate, validateKeyMatchesCert } from './crypto.service.js';
+import { createCaCertificate, parsePemCertificate, validateKeyMatchesCert, normalizePrivateKeyPem } from './crypto.service.js';
 import type { CaCertificate, KeyAlgorithm } from '@web-ca/shared';
 
 function toResponse(row: typeof caCertificates.$inferSelect): CaCertificate {
@@ -89,9 +89,10 @@ export function uploadCa(data: {
   name: string;
   certificatePem: string;
   privateKeyPem: string;
+  passphrase?: string;
   createdBy: string;
 }): CaCertificate {
-  if (!validateKeyMatchesCert(data.certificatePem, data.privateKeyPem)) {
+  if (!validateKeyMatchesCert(data.certificatePem, data.privateKeyPem, data.passphrase)) {
     throw new Error('Private key does not match certificate');
   }
 
@@ -99,6 +100,8 @@ export function uploadCa(data: {
   if (!parsed.isCa) {
     throw new Error('Certificate is not a CA certificate');
   }
+
+  const normalizedKeyPem = normalizePrivateKeyPem(data.privateKeyPem, data.passphrase);
 
   const row = db.insert(caCertificates).values({
     name: data.name,
@@ -111,7 +114,7 @@ export function uploadCa(data: {
     notBefore: parsed.notBefore.toISOString(),
     notAfter: parsed.notAfter.toISOString(),
     certificatePem: data.certificatePem,
-    privateKeyPem: encryptPrivateKey(data.privateKeyPem),
+    privateKeyPem: encryptPrivateKey(normalizedKeyPem),
     isUploaded: true,
     fingerprintSha256: parsed.fingerprintSha256,
     createdBy: data.createdBy,
